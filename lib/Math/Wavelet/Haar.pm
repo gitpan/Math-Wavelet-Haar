@@ -17,21 +17,22 @@ our @ISA = qw(Exporter);
 # If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
 # will save memory.
 our %EXPORT_TAGS = ( 'all' => [ qw(
-	 
+        transform1D
+        transform2D
+        detransform1D
+        detransform2D
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = qw(
-        decomp1D
-        decomp2D
 );
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 # Preloaded methods go here.
 
-sub decomp1D
+sub transform1D
 {
     my @input=@_;
     return if (!is_power2(scalar(@input)));
@@ -61,7 +62,7 @@ sub is_power2
   $_[0] && ($_[0]-1&$_[0] ) == 0 
 }
 
-sub decomp2D
+sub transform2D
 {
   my @input = @_;
   my $length = @_;
@@ -76,14 +77,72 @@ sub decomp2D
   #do the X direction
   for (0..$length-1)
   {
-    @{$input[$_]} = decomp1D(@{$input[$_]});
+    @{$input[$_]} = transform1D(@{$input[$_]});
   }
   
   for my $i (0..$width-1)
   { 
     my @col = map { $_->[$i] } @input;
     
-    @col = decomp1D(@col);
+    @col = transform1D(@col);
+    
+    for my $l (0..$#col)
+    {
+      $input[$l]->[$i] = $col[$l];
+    }
+  }  
+  
+  return @input;
+}
+
+sub detransform1D
+{
+    my @input=@_;
+    return if (!is_power2(scalar(@input)));
+    my @output=@input;
+
+   my $length=1;
+ 
+    for (; $length<=@input>>1; $length <<= 1) 
+    {
+      for my $i (0..$length-1)
+      {
+        my $x = ($input[$i] + $input[$i+$length])/2;
+        my $y = ($input[$i] - $input[$i+$length])/2;
+        $output[$i*2] = $x;
+        $output[$i*2+1] = $y;
+        print "$i :: $length :: $x :: $y :: ".(($length-1)*2)." \n";
+      }
+      #//Swap arrays to do next iteration
+      @input = @output;
+    }
+    
+    return @input;
+}
+
+sub detransform2D
+{
+  my @input = @_;
+  my $length = @_;
+  
+  my $width = @{$input[0]};
+  return if (!is_power2($width));
+  for (1..$length-1)
+  {
+    return if (@{$input[$_]} != $width);
+  }
+  
+  #do the X direction
+  for (0..$length-1)
+  {
+    @{$input[$_]} = detransform1D(@{$input[$_]});
+  }
+  
+  for my $i (0..$width-1)
+  { 
+    my @col = map { $_->[$i] } @input;
+    
+    @col = detransform1D(@col);
     
     for my $l (0..$#col)
     {
@@ -106,33 +165,50 @@ Math::Wavelet::Haar - Perl extension for transforming data with the Haar Wavelet
 
 =head1 SYNOPSIS
 
-  use Math::Wavelet::Haar;
+  use Math::Wavelet::Haar qw(:all);
 
   my @test = qw(1 2 3 4 5 6 7 8);
-  my @result = decomp1D(@test);
+  my @result = transform1D(@test);
   
   my @test = ([0,1,2,3],[1,2,3,4],[2,3,4,5],[3,4,5,6]);
-  my @result = decomp2D(@test);
+  my @result = transform2D(@test);
 
+  my @test = qw(36 -16 -4 -4 -1 -1 -1 -1);
+  my @result = detransform1D(@test);
+  
+  my @test = ([48,-16,-4,-4],[-16,0,0,0],[-4,0,0,0],[-4,0,0,0]);
+  my @result = detransform2D(@test);
+
+  my @test = ([48,-16,-4,-4],[-16,0,0,0],[-4,0,0,0],[-4,0,0,0]);
+  @result = detransform2D(transform2D(@test));
+  
+  @result == @test;
 
 =head1 DESCRIPTION
 
-Math::Wavelet::Haar is a module for performing a wavelet transform using the Haar wavelet.
-currently the reverse transform is not supported, though it is planned to be
+Math::Wavelet::Haar is a module for performing a discrete wavelet transform using the Haar wavelet.
 
 =head2 EXPORT
 
-=item B<decomp1D>
-    @result = decomp1D(@input);
+=item B<transform1D>
+    @result = transform1D(@input);
 takes a single array as input, and returns the transformed result, @input MUST be a power of two in length, if it is not, then it will return undef
 
-=item B<decomp2D>
-    @result = decomp2D(@input);
+=item B<transform2D>
+    @result = transform2D(@input);
 takes a single two dimensional array as input, and returns the transformed result, @input MUST be a power of two in length and width, if it is not, then it will return undef
+
+=item B<detransform1D>
+    @result = detransform1D(@input);
+takes a single array as input, and returns the inverse transform as the result, @input MUST be a power of two in length, if it is not, then it will return undef
+
+=item B<detransform2D>
+    @result = detransform2D(@input);
+takes a single two dimensional array as input, and returns the inverse transform as the result, @input MUST be a power of two in length and width, if it is not, then it will return undef
 
 =head1 SEE ALSO
 
-Wikipedia articles on the Haar Wavlet, Wavelet Transforms, and lots and lots of math
+Wikipedia articles on the Haar Wavlet, Discrete Wavelet Transforms, and lots and lots of math
 
 =head1 AUTHOR
 
