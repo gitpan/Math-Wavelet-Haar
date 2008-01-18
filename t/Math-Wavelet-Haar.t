@@ -5,7 +5,7 @@
 
 # change 'tests => 1' to 'tests => last_test_to_print';
 
-use Test::More tests => 9;
+use Test::More tests => 10;
 BEGIN { use_ok('Math::Wavelet::Haar',":all") };
 
 #########################
@@ -53,3 +53,7 @@ is_deeply($result, $expected, "deHaar 2D 1");
 $expected = [[0,1,0,1],[1,0,1,0],[0,1,0,1],[1,0,1,0]];
 $result = [detransform2D(@test)];
 is_deeply($result, $expected, "deHaar 2D 2");
+#test for bug in 2d transforms
+
+$expected = [[8,0,0,0],[0,0,0,0],[0,0,-2,-2],[0,0,-2,-2]];
+is_deeply(\@test,$expected, "deepcloning bug");

@@ -5,7 +5,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     NAME              => 'Math::Wavelet::Haar',
     VERSION_FROM      => 'lib/Math/Wavelet/Haar.pm', # finds $VERSION
-    PREREQ_PM         => {}, # e.g., Module::Name => 1.1
+    PREREQ_PM         => {Storable => 2.0}, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/Math/Wavelet/Haar.pm', # retrieve abstract from module
        AUTHOR         => 'Ryan Voots <simcop2387@yahoo.com>') : ()),

@@ -4,6 +4,7 @@ use 5.006;
 use strict;
 use warnings;
 use Data::Dumper;
+use Storable qw(dclone);
 
 require Exporter;
 
@@ -28,7 +29,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 our @EXPORT = qw(
 );
 
-our $VERSION = '0.02';
+our $VERSION = '0.05';
 
 # Preloaded methods go here.
 
@@ -64,7 +65,8 @@ sub is_power2
 
 sub transform2D
 {
-  my @input = @_;
+  my @input = @{dclone(\@_)};
+
   my $length = @_;
   
   my $width = @{$input[0]};
@@ -122,7 +124,7 @@ sub detransform1D
 
 sub detransform2D
 {
-  my @input = @_;
+  my @input = @{dclone(\@_)};
   my $length = @_;
   
   my $width = @{$input[0]};
@@ -209,6 +211,18 @@ takes a single two dimensional array as input, and returns the inverse transform
 =head1 SEE ALSO
 
 Wikipedia articles on the Haar Wavlet, Discrete Wavelet Transforms, and lots and lots of math
+
+=head1 CHANGES
+
+=item v0.01
+	First release, supports only transforming
+
+=item v0.02
+	Second release, supports transforming and its inverse
+	Changed API significatly
+
+=item v0.05
+	Third public release, fixes catastrophic bug that causes the input to the 2d transforms to be mangled
 
 =head1 AUTHOR
 
