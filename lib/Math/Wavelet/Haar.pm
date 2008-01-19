@@ -1,9 +1,9 @@
 package Math::Wavelet::Haar;
 
-use 5.006;
+use 5.005005;
 use strict;
 use warnings;
-use Data::Dumper;
+
 use Storable qw(dclone);
 
 require Exporter;
@@ -29,7 +29,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 our @EXPORT = qw(
 );
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 # Preloaded methods go here.
 
@@ -113,7 +113,6 @@ sub detransform1D
         my $y = ($input[$i] - $input[$i+$length])/2;
         $output[$i*2] = $x;
         $output[$i*2+1] = $y;
-        print "$i :: $length :: $x :: $y :: ".(($length-1)*2)." \n";
       }
       #//Swap arrays to do next iteration
       @input = @output;
@@ -223,6 +222,10 @@ Wikipedia articles on the Haar Wavlet, Discrete Wavelet Transforms, and lots and
 
 =item v0.05
 	Third public release, fixes catastrophic bug that causes the input to the 2d transforms to be mangled
+
+=item v0.06
+	Added some corrected dependencies and marked the module as usable by earlier perl versions
+	Also removed an incorrect print statement, that outputted debugging information that shouldn't have been outputted
 
 =head1 AUTHOR
 
